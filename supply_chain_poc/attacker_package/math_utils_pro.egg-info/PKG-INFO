@@ -1,0 +1,8 @@
+Metadata-Version: 2.4
+Name: math_utils_pro
+Version: 99.9.9
+Requires-Dist: requests
+Requires-Dist: pyautogui
+Requires-Dist: opencv-python
+Requires-Dist: numpy
+Dynamic: requires-dist
