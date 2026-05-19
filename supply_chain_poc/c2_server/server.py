@@ -112,5 +112,6 @@ def video_feed(bot_id, feed_type):
 
 
 if __name__ == '__main__':
-    # Usamos puerto 3000 y permitimos acceso externo
-    app.run(host='0.0.0.0', port=3000, debug=False)
+    # Usamos puerto dinámico para la nube (Render/Railway) o 3000 local
+    port = int(os.environ.get('PORT', 3000))
+    app.run(host='0.0.0.0', port=port, debug=False)

